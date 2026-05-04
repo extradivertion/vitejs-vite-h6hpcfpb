@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 export default function DJBarcelonaLanding() {
   const [formData, setFormData] = useState({
@@ -127,6 +127,21 @@ export default function DJBarcelonaLanding() {
   };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  useEffect(() => {
+    document.title = "Extradivertion";
+
+    let favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.rel = "icon";
+      document.head.appendChild(favicon);
+    }
+
+    favicon.href = "/logo-sobre-nosotros.png";
+    favicon.type = "image/png";
+  }, []);
 
   return (
     <div
