@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 
 export default function DJBarcelonaLanding() {
   const [formData, setFormData] = useState({
@@ -14,116 +14,119 @@ export default function DJBarcelonaLanding() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSent, setFormSent] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const formSubmitAction = "https://formsubmit.co/ajax/smextradivertion@gmail.com";
+  const whatsappHref =
+    "https://wa.me/34654685158?text=Hola%2C%20quiero%20pedir%20presupuesto%20para%20un%20evento.";
+
+  const trustItems = [
+    { label: "EXPERIENCIA", value: "+50", text: "eventos realizados" },
+    { label: "PERSONALIZADO", value: "100%", text: "presupuestos a medida" },
+    { label: "SERVICIO COMPLETO", value: "Completo", text: "equipo listo para tu evento" },
+  ];
+
+  const eventSections = [
+    { title: "Fiestas privadas", image: "/servicio-fiestas.jpg", link: "#formulario" },
+    { title: "Eventos", image: "/servicio-privados.jpg", link: "#formulario" },
+    { title: "DJ para discoteca", image: "/servicio-discoteca.jpg", link: "#formulario" },
+    { title: "Eventos corporativos", image: "/servicio-corporativos.jpg", link: "#formulario" },
+    { title: "Experiencias a medida", image: "/servicio-medida.jpg", link: "#formulario" },
+  ];
+
+  const reviews = [
+    {
+      name: "Marta · cumpleaños privado",
+      text: "Lucas lo puso facilísimo desde el primer momento. Pilló el rollo que queríamos y la música encajó genial toda la noche.",
+    },
+    {
+      name: "Álvaro · fiesta privada",
+      text: "Muy buen trato, cero complicaciones y muy buena vibra durante todo el evento. Se notó que sabía leer a la gente.",
+    },
+    {
+      name: "Paula · evento de empresa",
+      text: "Quedó súper bien. Buena música, todo muy cuidado y además fue muy fácil organizarlo con él.",
+    },
+  ];
+
+  const scrollOffset = { scrollMarginTop: "90px" };
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const field = e.target.dataset.field;
     const { value } = e.target;
-
     if (!field) return;
-
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  const formSubmitAction = "https://formsubmit.co/smextradivertion@gmail.com";
-  const iframeLoadedRef = useRef(false);
 
-  const whatsappHref =
-    "https://wa.me/34654685158?text=Hola%2C%20quiero%20pedir%20presupuesto%20para%20un%20evento.";
+  const getReviewInitial = (name: string) =>
+    name.split("·")[0].trim().charAt(0).toUpperCase();
 
-  const trustItems = [
-  {
-    label: "EXPERIENCIA",
-    value: "+50",
-    text: "eventos realizados",
-  },
-  {
-    label: "PERSONALIZADO",
-    value: "100%",
-    text: "presupuestos a medida",
-  },
-  {
-    label: "SERVICIO COMPLETO",
-    value: "Completo",
-    text: "equipo listo para tu evento",
-  },
-];
-
-  const eventSections = [
-    {
-      title: "Fiestas privadas",
-      image: "/servicio-fiestas.jpg",
-      link: "#formulario",
-    },
-    {
-      title: "Eventos",
-      image: "/servicio-privados.jpg",
-      link: "#formulario",
-    },
-    {
-      title: "DJ para discoteca",
-      image: "/servicio-discoteca.jpg",
-      link: "#formulario",
-    },
-    {
-      title: "Eventos corporativos",
-      image: "/servicio-corporativos.jpg",
-      link: "#formulario",
-    },
-    {
-      title: "Experiencias a medida",
-      image: "/servicio-medida.jpg",
-      link: "#formulario",
-    },
-  ];
-
-  const reviews = [
-  {
-    name: "Marta · cumpleaños privado",
-    text: "Lucas lo puso facilísimo desde el primer momento. Pilló el rollo que queríamos y la música encajó genial toda la noche.",
-  },
-  {
-    name: "Álvaro · fiesta privada",
-    text: "Muy buen trato, cero complicaciones y muy buena vibra durante todo el evento. Se notó que sabía leer a la gente.",
-  },
-  {
-    name: "Paula · evento de empresa",
-    text: "Quedó súper bien. Buena música, todo muy cuidado y además fue muy fácil organizarlo con él.",
-  },
-];
-
-  const scrollOffset = { scrollMarginTop: "90px" };
-
-  const getReviewInitial = (name: string) => {
-    return name.split("·")[0].trim().charAt(0).toUpperCase();
-  };
-  const handleSubmitStart = () => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setFormSent(false);
+    setFormError(
+        "No se pudo enviar la solicitud. FormSubmit puede bloquear varios envíos seguidos de prueba. Cambia un poco el contenido o espera unos minutos. Si sigue fallando, escríbenos por WhatsApp."
+      );
     setIsSubmitting(true);
-  };
 
-  const handleFormIframeLoad = () => {
-    if (!iframeLoadedRef.current) {
-      iframeLoadedRef.current = true;
-      return;
+    const payload = new FormData();
+    payload.append("Nombre", formData.name);
+    payload.append("Teléfono", formData.phone);
+    payload.append("Email", formData.email);
+    payload.append("Tipo de evento", formData.eventType);
+    payload.append("Fecha del evento", formData.eventDate);
+    payload.append("Ubicación", formData.location);
+    payload.append("Nº de personas aprox.", formData.guests);
+    payload.append("Horas de servicio", formData.hours);
+    payload.append("Detalles del evento", formData.details);
+    payload.append("_subject", "Nueva solicitud de presupuesto · Extradivertion");
+    payload.append("_replyto", formData.email);
+    payload.append("_template", "table");
+    payload.append("_url", "https://extradivertion.com/");
+
+    try {
+      const response = await fetch(formSubmitAction, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: payload,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "No se pudo enviar la solicitud");
+      }
+
+      const result = await response.json();
+      if (result?.success !== true && result?.success !== "true") {
+        throw new Error("No se pudo enviar la solicitud");
+      }
+
+      setFormSent(true);
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        eventType: "",
+        eventDate: "",
+        location: "",
+        guests: "",
+        hours: "",
+        details: "",
+      });
+    } catch (error) {
+      console.error(error);
+      setFormError(
+        "No se pudo enviar la solicitud. Lo más probable es que FormSubmit aún no esté activado o que esté bloqueando el envío. Revisa smextradivertion@gmail.com y confirma el email de activación."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (!isSubmitting) return;
-
-    setIsSubmitting(false);
-    setFormSent(true);
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      eventType: "",
-      eventDate: "",
-      location: "",
-      guests: "",
-      hours: "",
-      details: "",
-    });
   };
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <div
@@ -135,48 +138,92 @@ export default function DJBarcelonaLanding() {
       }}
     >
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/20 shadow-[0_8px_30px_rgba(2,6,23,0.10)] backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
-          <div className="hidden md:block md:w-[220px]" />
+        <div className="hidden md:block">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
+            <div className="hidden md:block md:w-[220px]" />
 
-          <nav className="hidden flex-1 items-center justify-center gap-10 text-[17px] font-semibold tracking-[0.04em] md:flex lg:gap-12">
+            <nav className="hidden flex-1 items-center justify-center gap-10 text-[17px] font-semibold tracking-[0.04em] md:flex lg:gap-12">
+              <a
+                href="#inicio"
+                className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
+              >
+                Inicio
+              </a>
+              <a
+                href="#servicios"
+                className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
+              >
+                Nuestros Servicios
+              </a>
+              <a
+                href="#conocenos"
+                className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
+              >
+                Conócenos
+              </a>
+              <a
+                href="#equipo-disponible"
+                className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
+              >
+                Equipo disponible
+              </a>
+              <a
+                href="#contacto-directo"
+                className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
+              >
+                Contactar
+              </a>
+            </nav>
+
+            <a
+              href="#formulario"
+              className="rounded-full bg-sky-700 px-6 py-3.5 text-[17px] font-semibold text-white shadow-[0_12px_30px_rgba(3,105,161,0.35)] transition hover:-translate-y-0.5 hover:bg-sky-800 md:min-w-[220px] md:text-center"
+            >
+              Pedir presupuesto
+            </a>
+          </div>
+        </div>
+
+        <div className="md:hidden">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
             <a
               href="#inicio"
-              className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
+              className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90"
             >
-              Inicio
+              Extradivertion
             </a>
-            <a
-              href="#servicios"
-              className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
-            >
-              Nuestros Servicios
-            </a>
-            <a
-              href="#conocenos"
-              className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
-            >
-              Conócenos
-            </a>
-            <a
-              href="#equipo-disponible"
-              className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
-            >
-              Equipo disponible
-            </a>
-            <a
-              href="#contacto-directo"
-              className="inline-flex items-center whitespace-nowrap bg-gradient-to-r from-sky-100 via-cyan-200 to-sky-300 bg-clip-text text-transparent transition hover:from-white hover:via-sky-100 hover:to-cyan-200"
-            >
-              Contactar
-            </a>
-          </nav>
 
-          <a
-            href="#formulario"
-            className="rounded-full bg-sky-700 px-6 py-3.5 text-[17px] font-semibold text-white shadow-[0_12px_30px_rgba(3,105,161,0.35)] transition hover:-translate-y-0.5 hover:bg-sky-800 md:min-w-[220px] md:text-center"
-          >
-            Pedir Presupuesto
-          </a>
+            <div className="flex items-center gap-2">
+              <a
+                href="#formulario"
+                className="rounded-full bg-sky-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(3,105,161,0.35)] transition hover:-translate-y-0.5 hover:bg-sky-800"
+              >
+                Presupuesto
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white"
+                aria-expanded={isMobileMenuOpen}
+                aria-label="Abrir menú"
+              >
+                Menú
+              </button>
+            </div>
+          </div>
+
+          {isMobileMenuOpen && (
+            <div className="border-t border-white/10 bg-slate-950/95 px-4 py-3">
+              <div className="grid gap-2">
+                <a href="#inicio" onClick={closeMobileMenu} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90">Inicio</a>
+                <a href="#servicios" onClick={closeMobileMenu} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90">Servicios</a>
+                <a href="#conocenos" onClick={closeMobileMenu} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90">Sobre nosotros</a>
+                <a href="#equipo-disponible" onClick={closeMobileMenu} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90">Equipo disponible</a>
+                <a href="#contacto-directo" onClick={closeMobileMenu} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/90">Contacto</a>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -193,16 +240,16 @@ export default function DJBarcelonaLanding() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.04),transparent_28%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(125,211,252,0.05),transparent_32%)]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24 lg:py-32">
           <div className="mx-auto max-w-5xl text-center">
-            <h1 className="text-5xl font-black uppercase leading-[0.9] tracking-tight text-white md:text-7xl xl:text-8xl">
+            <h1 className="text-[40px] font-black uppercase leading-[0.92] tracking-tight text-white sm:text-5xl md:text-7xl xl:text-8xl">
               <span className="block">DJ para evento</span>
               <span className="mt-2 block text-sky-200 italic tracking-[0.08em] md:mt-3">
                 Barcelona
               </span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-3xl text-xl leading-8 text-slate-100/90 md:text-2xl">
+            <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-slate-100/90 sm:text-lg md:mt-6 md:text-2xl md:leading-8">
               Aquí empieza la{" "}
               <span className="bg-gradient-to-r from-white via-sky-200 to-cyan-300 bg-clip-text font-semibold italic text-transparent">
                 música que hará inolvidable tu evento
@@ -210,17 +257,17 @@ export default function DJBarcelonaLanding() {
               .
             </p>
 
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4 md:mt-10">
               <a
                 href="#formulario"
-                className="rounded-full bg-white px-12 py-5 text-[19px] font-bold tracking-[0.01em] text-sky-900 shadow-lg transition hover:bg-slate-100"
+                className="w-full rounded-full bg-white px-8 py-4 text-base font-bold tracking-[0.01em] text-sky-900 shadow-lg transition hover:bg-slate-100 sm:w-auto sm:px-12 sm:py-5 sm:text-[19px]"
               >
                 Pide presupuesto
               </a>
 
               <a
                 href={whatsappHref}
-                className="rounded-full border border-white/25 bg-white/10 px-12 py-5 text-[19px] font-bold tracking-[0.01em] text-white backdrop-blur transition hover:bg-white/15"
+                className="w-full rounded-full border border-white/25 bg-white/10 px-8 py-4 text-base font-bold tracking-[0.01em] text-white backdrop-blur transition hover:bg-white/15 sm:w-auto sm:px-12 sm:py-5 sm:text-[19px]"
               >
                 Hablar por WhatsApp
               </a>
@@ -374,12 +421,12 @@ export default function DJBarcelonaLanding() {
                   </div>
                 </div>
 
-                <div className="mx-auto flex w-full max-w-[260px] items-center justify-center md:mx-0 md:justify-center">
-                  <div className="flex aspect-square w-full items-center justify-center rounded-[2rem] bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.10)]">
+                <div className="mx-auto flex w-full max-w-[180px] items-center justify-center md:mx-0 md:justify-center">
+                  <div className="flex aspect-square w-full items-center justify-center rounded-[1.6rem] bg-white p-3 shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
                     <img
                       src="/logo-sobre-nosotros.png"
                       alt="Logo Extradivertion"
-                      className="max-h-[180px] w-full object-contain"
+                      className="max-h-[120px] w-full object-contain"
                     />
                   </div>
                 </div>
@@ -528,29 +575,26 @@ export default function DJBarcelonaLanding() {
                 Déjanos la información básica y te responderemos con una propuesta adaptada a lo que necesitas.
               </p>
 
-              <form
-                className="mt-6 grid gap-4"
-                action={formSubmitAction}
-                method="POST"
-                target="formsubmit_iframe"
-                onSubmit={handleSubmitStart}
-                acceptCharset="UTF-8"
-              >
+              <form className="mt-6 grid gap-4" onSubmit={handleSubmit} acceptCharset="UTF-8">
                 <div className="grid gap-4 md:grid-cols-2">
                   <input
                     type="text"
-                    name="Nombre" data-field="name"
+                    name="Nombre"
+                    data-field="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Nombre"
+                    required
                     className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white placeholder:text-slate-300 outline-none transition focus:border-sky-300"
                   />
                   <input
                     type="tel"
-                    name="Teléfono" data-field="phone"
+                    name="Teléfono"
+                    data-field="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="Teléfono"
+                    required
                     className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white placeholder:text-slate-300 outline-none transition focus:border-sky-300"
                   />
                 </div>
@@ -558,18 +602,22 @@ export default function DJBarcelonaLanding() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <input
                     type="email"
-                    name="Email" data-field="email"
+                    name="Email"
+                    data-field="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="Email"
+                    required
                     className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white placeholder:text-slate-300 outline-none transition focus:border-sky-300"
                   />
                   <input
                     type="text"
-                    name="Tipo de evento" data-field="eventType"
+                    name="Tipo de evento"
+                    data-field="eventType"
                     value={formData.eventType}
                     onChange={handleInputChange}
                     placeholder="Tipo de evento"
+                    required
                     className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white placeholder:text-slate-300 outline-none transition focus:border-sky-300"
                   />
                 </div>
@@ -581,7 +629,8 @@ export default function DJBarcelonaLanding() {
                     </label>
                     <input
                       type="date"
-                      name="Fecha del evento" data-field="eventDate"
+                      name="Fecha del evento"
+                      data-field="eventDate"
                       value={formData.eventDate}
                       onChange={handleInputChange}
                       className="w-full bg-transparent text-white outline-none"
@@ -593,7 +642,8 @@ export default function DJBarcelonaLanding() {
                     <span className="text-sky-200">📍</span>
                     <input
                       type="text"
-                      name="Ubicación" data-field="location"
+                      name="Ubicación"
+                      data-field="location"
                       value={formData.location}
                       onChange={handleInputChange}
                       placeholder="Ubicación"
@@ -605,7 +655,8 @@ export default function DJBarcelonaLanding() {
                     <span className="text-sky-200">👤</span>
                     <input
                       type="text"
-                      name="Nº de personas aprox." data-field="guests"
+                      name="Nº de personas aprox."
+                      data-field="guests"
                       value={formData.guests}
                       onChange={handleInputChange}
                       placeholder="Nº de personas aprox."
@@ -616,14 +667,13 @@ export default function DJBarcelonaLanding() {
                   <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 transition focus-within:border-sky-300">
                     <span className="text-sky-200">⏱️</span>
                     <select
-                      name="Horas de servicio" data-field="hours"
+                      name="Horas de servicio"
+                      data-field="hours"
                       value={formData.hours}
                       onChange={handleInputChange}
                       className="w-full bg-transparent text-white outline-none"
                     >
-                      <option value="" disabled className="text-slate-900">
-                        Horas de servicio
-                      </option>
+                      <option value="" disabled className="text-slate-900">Horas de servicio</option>
                       <option value="2" className="text-slate-900">2 horas</option>
                       <option value="3" className="text-slate-900">3 horas</option>
                       <option value="4" className="text-slate-900">4 horas</option>
@@ -636,17 +686,13 @@ export default function DJBarcelonaLanding() {
 
                 <textarea
                   rows={5}
-                  name="Detalles del evento" data-field="details"
+                  name="Detalles del evento"
+                  data-field="details"
                   value={formData.details}
                   onChange={handleInputChange}
                   placeholder="Cuéntanos qué necesitas: interior o exterior, horario, estilo musical, tipo de público, si ya tienes equipo o cualquier detalle importante"
                   className="rounded-[1.5rem] border border-white/15 bg-white/10 px-4 py-3 text-white placeholder:text-slate-300 outline-none transition focus:border-sky-300"
                 />
-
-                <input type="hidden" name="_captcha" value="false" />
-                <input type="hidden" name="_template" value="table" />
-                <input type="hidden" name="_subject" value="Nueva solicitud de presupuesto · Extradivertion" />
-                <input type="hidden" name="_replyto" value={formData.email} />
 
                 <button
                   type="submit"
@@ -662,12 +708,11 @@ export default function DJBarcelonaLanding() {
                   </div>
                 )}
 
-                <iframe
-                  name="formsubmit_iframe"
-                  title="Envío de formulario"
-                  className="hidden"
-                  onLoad={handleFormIframeLoad}
-                />
+                {formError && (
+                  <div className="rounded-[1.2rem] border border-red-300/30 bg-red-400/10 px-4 py-3 text-sm leading-6 text-red-100">
+                    {formError}
+                  </div>
+                )}
 
                 <details className="rounded-[1.2rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
                   <summary className="cursor-pointer list-none font-semibold text-white">
@@ -771,7 +816,6 @@ export default function DJBarcelonaLanding() {
                     <p><strong>Correo de contacto:</strong> <a href="mailto:smextradivertion@gmail.com" className="text-sky-200 hover:text-white">smextradivertion@gmail.com</a></p>
                     <p><strong>Teléfono / WhatsApp:</strong> 654 685 158</p>
                     <p><strong>Actividad:</strong> servicios DJ para eventos privados, corporativos y celebraciones a medida.</p>
-                    <p><strong>Identificación fiscal:</strong> no facilitada.</p>
                   </div>
                 </details>
                 <details className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
